@@ -6,7 +6,20 @@
 #include <arpa/inet.h>
 #include <sys/epoll.h>
 #include <fcntl.h>
+#include <signal.h>
+
 #include "Threadpool.h"
+
+int sersocket;
+int epfd;
+
+void closesocket(int sig){
+    if(sig==SIGINT){
+        cout<<"close server socket"<<endl;
+        close(sersocket);
+        close(epfd);
+    }
+}//利用信号机制关闭服务端套接字
 
 void setnonblockingmode(int fd){//将socket设置成非阻塞
     int flag =  fcntl(fd,F_GETFL,0);
@@ -14,7 +27,8 @@ void setnonblockingmode(int fd){//将socket设置成非阻塞
 }
 
 int WebServer(const char* ip,int port,int thread){
-    int sersocket=socket(PF_INET,SOCK_STREAM,0);
+    sersocket=socket(PF_INET,SOCK_STREAM,0);
+   signal(SIGINT,closesocket);
     if(sersocket < 0){
 		printf("socket error\n");
 		exit(1);
@@ -45,7 +59,7 @@ int WebServer(const char* ip,int port,int thread){
     pool.start();
    
 
-    int epfd;
+    
     epfd=epoll_create(size);//将大小设置为和listen第二个参数一样
     struct epoll_event *ep_events;
     struct epoll_event event;
@@ -55,7 +69,7 @@ int WebServer(const char* ip,int port,int thread){
     epoll_ctl(epfd,EPOLL_CTL_ADD,sersocket,&event);
 
     while(1){
-        
+
         int event_cnt=epoll_wait(epfd,ep_events,size,-1);
         if(event_cnt==-1){
             printf("epoll_wait() error\n");
@@ -87,7 +101,7 @@ int WebServer(const char* ip,int port,int thread){
             }
         }
     }
-    close(sersocket);
+    // close(sersocket);
 }
 
 int main(int argc,char* argv[]){
@@ -126,6 +140,6 @@ int main(int argc,char* argv[]){
     }
     printf("ip : %s\nport : %d\nnumthread : %d\n ",ip,port,numThread);
     WebServer(ip,port,numThread);
-  
+    
     return 0;
 }
