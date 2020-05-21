@@ -27,3 +27,8 @@ epoll实现边缘出发，当有请求到来时，检查相应的套接字是否
 
 
 **虽然性能有了质的飞越，但是我的epoll封装的不太好，需要后序学习了大牛写的代码后再进行改进**
+
+
+
+**详细介绍请阅读博客：[HTTP WebServer](https://blog.csdn.net/dsaaf21/article/details/106229185)**
+
